@@ -1,6 +1,7 @@
 package posts;
 
 import io.github.kazimierzfilip.RestTest;
+import io.qameta.allure.Issue;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class PostPostsTest extends RestTest {
         private String body;
     }
 
+    @Issue("TYPICODE-1")
     @Test
     public void success_create_post() {
         PostRequest requestBody = prepareRequest();
