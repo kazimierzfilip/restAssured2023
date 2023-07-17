@@ -1,5 +1,7 @@
 package posts;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.kazimierzfilip.RestTest;
 import io.qameta.allure.Issue;
 import io.restassured.RestAssured;
@@ -8,9 +10,11 @@ import lombok.Data;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.matchesPattern;
-import static org.hamcrest.Matchers.notNullValue;
+import java.util.Map;
+
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class PostPostsTest extends RestTest {
 
@@ -53,6 +57,77 @@ public class PostPostsTest extends RestTest {
         requestBody.setId(id);
         PostRequest responseBody = getResponse().as(PostRequest.class);
         assertEquals(requestBody, responseBody, "Response should be the same as request JSON");
+    }
+
+    @Test
+    public void success_id_from_request_is_not_used() {
+        PostRequest requestBody = new PostRequest() {{
+            setId(1);
+            setUserId(1);
+            setTitle("First post");
+            setBody("Lorem ipsum dolor sit amet");
+        }};
+
+        given()
+                .body(requestBody)
+                .and()
+                .contentType(ContentType.JSON)
+                .log().all();
+
+        when().post();
+
+        then().log().all()
+                .assertThat()
+                .statusCode(201)
+                .header("Location", notNullValue());
+
+        Integer id = getIdFromLocationHeader(getResponse().header("Location"));
+        PostRequest responseBody = getResponse().as(PostRequest.class);
+
+        assertEquals(id, responseBody.getId(), "Response id should be the same as in Location header");
+        assertNotEquals(requestBody.getId(), responseBody.getId(),
+                "Response id should not be the same as request id (id should be generated)");
+    }
+
+    @Issue("TYPICODE-2")
+    @Test
+    public void error_userId_invalid_type() {
+        PostRequest requestBody = prepareRequest();
+        Map<String, Object> map = new ObjectMapper().convertValue(requestBody, new TypeReference<>() {
+        });
+        map.put("userId", "0");
+
+        given()
+                .body(map)
+                .and()
+                .contentType(ContentType.JSON)
+                .log().all();
+
+        when().post();
+
+        then().log().all()
+                .assertThat()
+                .statusCode(400)
+                .header("Location", nullValue());
+    }
+
+    @Issue("TYPICODE-3")
+    @Test
+    public void error_invalid_content_type() {
+        PostRequest requestBody = prepareRequest();
+
+        given()
+                .body(requestBody)
+                .and()
+                .contentType(ContentType.XML)
+                .log().all();
+
+        when().post();
+
+        then().log().all()
+                .assertThat()
+                .statusCode(415)
+                .header("Location", nullValue());
     }
 
     private PostRequest prepareRequest() {
