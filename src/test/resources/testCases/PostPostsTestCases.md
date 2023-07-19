@@ -51,7 +51,7 @@ Send request:
 
 - Assert response http status code is 201
 - Assert location header contains same id as in response
-- Assert that id in response body is different from id in request body
+- Assert that id in **response** body is different from id in **request** body
 
 ## TYPI-3
 
@@ -65,7 +65,7 @@ User id type validation
 
 Send request:
 
-- userId - some string
+- userId - some **string**
 - title - some string
 - body - some string
 
