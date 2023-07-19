@@ -1,5 +1,6 @@
 package io.github.kazimierzfilip;
 
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
@@ -11,7 +12,7 @@ public class RestTest {
     private HttpAction httpAction;
 
     public RequestSpecification given() {
-        requestSpecification = RestAssured.given();
+        requestSpecification = RestAssured.given().filter(new AllureRestAssured()).log().all();
         return requestSpecification;
     }
 
@@ -24,7 +25,7 @@ public class RestTest {
         if (httpAction == null) {
             throw new RuntimeException("HTTP action not performed yet");
         }
-        return httpAction.getResponse().then();
+        return httpAction.getResponse().then().log().all();
     }
 
     public Response getResponse() {
