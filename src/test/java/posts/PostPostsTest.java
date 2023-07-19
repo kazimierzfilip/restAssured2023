@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.kazimierzfilip.RestTest;
 import io.qameta.allure.Issue;
+import io.qameta.allure.Step;
 import io.qameta.allure.TmsLink;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.*;
 
 import java.util.Map;
 
+import static io.qameta.allure.Allure.step;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -39,22 +41,25 @@ public class PostPostsTest extends RestTest {
     @Test
     public void success_create_post() {
         PostRequest requestBody = prepareRequest();
-        given()
-                .body(requestBody)
-                .contentType(ContentType.JSON)
-                .log().all();
 
-        when().post();
+        step("Set request body and content-type: application/json",
+                () -> given()
+                        .body(requestBody)
+                        .contentType(ContentType.JSON));
 
-        then().log().all()
-                .assertThat()
-                .statusCode(201)
-                .header("Location", notNullValue())
-                .header("Location", matchesPattern(RestAssured.baseURI + RestAssured.basePath + "/\\d+"));
+        step("Send POST request", () -> when().post());
+
+        step("Assert that HTTP status is 201 and Location header contains resource id", () ->
+                then()
+                        .assertThat()
+                        .statusCode(201)
+                        .header("Location", notNullValue())
+                        .header("Location", matchesPattern(RestAssured.baseURI + RestAssured.basePath + "/\\d+")));
 
         responseBodyEqualsRequestBody(requestBody);
     }
 
+    @Step
     private void responseBodyEqualsRequestBody(PostRequest requestBody) {
         Integer id = getIdFromLocationHeader(getResponse().header("Location"));
         requestBody.setId(id);
@@ -65,32 +70,35 @@ public class PostPostsTest extends RestTest {
     @TmsLink("TYPI-2")
     @Test
     public void success_id_from_request_is_not_used() {
-        PostRequest requestBody = new PostRequest() {{
-            setId(1);
-            setUserId(1);
-            setTitle("First post");
-            setBody("Lorem ipsum dolor sit amet");
-        }};
+        PostRequest requestBody = step("Prepare request body with id", () ->
+                new PostRequest() {{
+                    setId(1);
+                    setUserId(1);
+                    setTitle("First post");
+                    setBody("Lorem ipsum dolor sit amet");
+                }});
 
-        given()
-                .body(requestBody)
-                .and()
-                .contentType(ContentType.JSON)
-                .log().all();
+        step("Set request body and content-type: application/json",
+                () -> given()
+                        .body(requestBody)
+                        .contentType(ContentType.JSON));
 
-        when().post();
+        step("Send POST request", () -> when().post());
 
-        then().log().all()
-                .assertThat()
-                .statusCode(201)
-                .header("Location", notNullValue());
+        step("Assert that HTTP status is 201 and Location header is NOT null", () ->
+                then()
+                        .assertThat()
+                        .statusCode(201)
+                        .header("Location", notNullValue()));
 
         Integer id = getIdFromLocationHeader(getResponse().header("Location"));
         PostRequest responseBody = getResponse().as(PostRequest.class);
 
-        assertEquals(id, responseBody.getId(), "Response id should be the same as in Location header");
-        assertNotEquals(requestBody.getId(), responseBody.getId(),
-                "Response id should not be the same as request id (id should be generated)");
+        step("Assert response id is the same as in Location header", () ->
+                assertEquals(id, responseBody.getId(), "Response id should be the same as in Location header"));
+        step("Assert that response id is NOT the same as request id", () ->
+                assertNotEquals(requestBody.getId(), responseBody.getId(),
+                        "Response id should not be the same as request id (id should be generated)"));
     }
 
     @Issue("TYPICODE-2")
@@ -102,18 +110,19 @@ public class PostPostsTest extends RestTest {
         });
         map.put("userId", "0");
 
-        given()
-                .body(map)
-                .and()
-                .contentType(ContentType.JSON)
-                .log().all();
+        step("Set request body and content-type: application/json",
+                () -> given()
+                        .body(map)
+                        .contentType(ContentType.JSON)
+        );
 
-        when().post();
+        step("Send POST request", () -> when().post());
 
-        then().log().all()
-                .assertThat()
-                .statusCode(400)
-                .header("Location", nullValue());
+        step("Assert that HTTP status is 400 and Location header is null", () ->
+                then()
+                        .assertThat()
+                        .statusCode(400)
+                        .header("Location", nullValue()));
     }
 
     @Issue("TYPICODE-3")
@@ -122,20 +131,22 @@ public class PostPostsTest extends RestTest {
     public void error_invalid_content_type() {
         PostRequest requestBody = prepareRequest();
 
-        given()
-                .body(requestBody)
-                .and()
-                .contentType(ContentType.XML)
-                .log().all();
+        step("Set request body and content-type: application/xml",
+                () -> given()
+                        .body(requestBody)
+                        .contentType(ContentType.XML)
+        );
 
-        when().post();
+        step("Send POST request", () -> when().post());
 
-        then().log().all()
-                .assertThat()
-                .statusCode(415)
-                .header("Location", nullValue());
+        step("Assert that HTTP status is 415 and Location header is null", () ->
+                then()
+                        .assertThat()
+                        .statusCode(415)
+                        .header("Location", nullValue()));
     }
 
+    @Step("Prepare request with userId, title and body")
     private PostRequest prepareRequest() {
         return new PostRequest() {{
             setUserId(1);

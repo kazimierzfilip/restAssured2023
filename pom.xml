@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <allure.maven.version>2.12.0</allure.maven.version>
+        <allure.version>2.23.0</allure.version>
 
         <!--Allow failure in tests-->
         <maven.test.failure.ignore>true</maven.test.failure.ignore>
@@ -49,14 +50,19 @@
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-junit5</artifactId>
-            <version>2.23.0</version>
-            <scope>test</scope>
+            <version>${allure.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-maven</artifactId>
             <version>${allure.maven.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-rest-assured</artifactId>
+            <version>${allure.version}</version>
         </dependency>
 
     </dependencies>
