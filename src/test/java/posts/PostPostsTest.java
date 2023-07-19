@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.kazimierzfilip.RestTest;
 import io.qameta.allure.Issue;
+import io.qameta.allure.TmsLink;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class PostPostsTest extends RestTest {
     }
 
     @Issue("TYPICODE-1")
+    @TmsLink("TYPI-1")
     @Test
     public void success_create_post() {
         PostRequest requestBody = prepareRequest();
@@ -59,6 +61,7 @@ public class PostPostsTest extends RestTest {
         assertEquals(requestBody, responseBody, "Response should be the same as request JSON");
     }
 
+    @TmsLink("TYPI-2")
     @Test
     public void success_id_from_request_is_not_used() {
         PostRequest requestBody = new PostRequest() {{
@@ -90,6 +93,7 @@ public class PostPostsTest extends RestTest {
     }
 
     @Issue("TYPICODE-2")
+    @TmsLink("TYPI-3")
     @Test
     public void error_userId_invalid_type() {
         PostRequest requestBody = prepareRequest();
@@ -112,6 +116,7 @@ public class PostPostsTest extends RestTest {
     }
 
     @Issue("TYPICODE-3")
+    @TmsLink("TYPI-4")
     @Test
     public void error_invalid_content_type() {
         PostRequest requestBody = prepareRequest();
