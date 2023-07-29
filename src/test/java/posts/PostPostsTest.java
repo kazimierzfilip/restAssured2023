@@ -10,8 +10,12 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import lombok.Data;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static io.qameta.allure.Allure.step;
 import static org.hamcrest.Matchers.*;
@@ -101,14 +105,19 @@ public class PostPostsTest extends RestTest {
                         "Response id should not be the same as request id (id should be generated)"));
     }
 
+    public static Stream<Arguments> getInvalidTypes() {
+        return Stream.of(Arguments.of("userId", "0"), Arguments.of("id", "0"));
+    }
+
     @Issue("TYPICODE-2")
     @TmsLink("TYPI-3")
-    @Test
-    public void error_userId_invalid_type() {
+    @ParameterizedTest
+    @MethodSource("getInvalidTypes")
+    public void error_invalid_type(String field, String value) {
         PostRequest requestBody = prepareRequest();
         Map<String, Object> map = new ObjectMapper().convertValue(requestBody, new TypeReference<>() {
         });
-        map.put("userId", "0");
+        map.put(field, value);
 
         step("Set request body and content-type: application/json",
                 () -> given()
