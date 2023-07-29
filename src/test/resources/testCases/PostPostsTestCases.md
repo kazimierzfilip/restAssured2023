@@ -3,6 +3,7 @@
 - [TYPI-1](#typi-1)
 - [TYPI-2](#typi-2)
 - [TYPI-3](#typi-3)
+- [TYPI-4](#typi-4)
 
 ## TYPI-1
 
